@@ -180,7 +180,6 @@ contract("EarlyBirds", function (accounts) {
       let hex = web3.utils.asciiToHex(txt);
       let num = web3.utils.hexToNumber(campaignCode);
       let ntox = web3.utils.hexToNumber(num);
-      console.log("Code: "+campaignCode+" number:"+num+" Hex:"+hex);
 
       await catchRevert(instance.airdrop(firstCampaignID, { from: bob }), "Only owner should be able to airdrop");
     })

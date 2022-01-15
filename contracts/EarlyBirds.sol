@@ -49,7 +49,7 @@ contract EarlyBirds{
 /// @notice creates a new campaign; generates campaign id to be shared for registrations
 ///         assigns creator as the host which allows them to controol states
 /// @dev to fetch details of the campaign created call getCampaignDetails
-  function addCampaign(string memory _title, uint _capacity) public returns(bool){
+  function addCampaign(string memory _title, uint _capacity) public returns(bool, uint){
     bytes4 _code = hash(_title, _capacity, msg.sender);
     campaignCount += 1;
     campaigns[campaignCount] = Campaign({
@@ -62,7 +62,7 @@ contract EarlyBirds{
     });
     campaignCodes[_code] = campaignCount;
     emit LogCampaignOpened(_title, campaignCount, _code);
-    return true;
+    return (true, campaignCount);
   }
 
 /// @notice registration function (requires campaign code provided by host), only allows single registration
