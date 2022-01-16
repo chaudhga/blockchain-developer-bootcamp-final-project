@@ -4,6 +4,7 @@ import getWeb3 from "./getWeb3";
 
 import "./App.css";
 
+
 class App extends Component {
   state = { storageValue: 0, web3: null, accounts: null, contract: null };
 
@@ -25,7 +26,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ code:0, web3, accounts, contract: instance });//, this.runExample);
+      this.setState({ code:0, registered:"", web3, accounts, contract: instance });//, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -35,21 +36,38 @@ class App extends Component {
     }
   };
 
+
   runExample = async () => {
     const { accounts, contract } = this.state;
     const title = document.getElementById("title").value;
     const cap = document.getElementById("capacity").value;
 
     // Stores a given value, 5 by default.
-    await contract.methods.addCampaign(title, cap).send({ from: accounts[0] });
-
+    await contract.methods.addCampaign(title, cap).send({ from: accounts[0]});
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.getCampaignDetails(1).call();
+    const response = await contract.methods.getLastCampaignDetails().call();
 
     // Update state with the result.
-    this.setState({ code: response[1] });
+    this.setState({ code: response[1]});
   };
 
+  runRegister = async () => {
+    const { accounts, contract } = this.state;
+    const campaignCode = document.getElementById("Code").value;
+    console.log(campaignCode);
+
+    // Stores a given value, 5 by default.
+    const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
+    const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
+    const failedMsg =  "OOPS! Early birds have scooped up all the wormies. Stay tuned for more events...";
+    let registrationMessage;
+    if (tx.logs[0].event == "LogRegistration") {
+      registrationMessage = successMsg;
+    }else{const registrationMessage = failedMsg}
+
+    // Update state with the result.
+    this.setState({ registered: registrationMessage});
+  };
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -69,12 +87,25 @@ class App extends Component {
           <text>Capacity: </text>
           <input type="text" id="capacity"></input>
           <br/>
-          <button type="submit" onClick={()=>this.runExample()}>Submit</button>
+          <button type="submit" onClick={()=>this.runExample()}>Create</button>
         </div>
         <br/>
-        <div>Your Campaign Code is: {this.state.code}</div>
+        <div>Code for sharing: {this.state.code}</div>
         <br/>
         <div>(Share the code out, bring in the birdies)</div>
+        <p>
+            Great! You got the Code?  Hurry and register before all free WORMies are gone!
+        </p>
+        <br/>
+        <div>
+          <text>Entere the Code shared by the host: </text>
+          <input type="text" id="Code"></input>
+          <br/>
+          <br/>
+          <button type="submit" onClick={()=>this.runRegister()}>Register</button>
+        </div>
+        <br/>
+        <div>Status: {this.state.registered}</div>
       </div>
     );
   }

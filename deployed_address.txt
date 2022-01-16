@@ -1,0 +1,4 @@
+Network: ropsten
+Contract Address(Wormies): 0x4581511AB6673106415172F7b86B36a323070b11
+Contract Address(EarlyBirds): 0x215Bc3b9E8C2ab22f9ec6E24A334dD83FBE86e5f
+

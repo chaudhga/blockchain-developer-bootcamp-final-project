@@ -10,7 +10,7 @@ contract("EarlyBirds", function (accounts) {
   const emptyAddress = "0x0000000000000000000000000000000000000000";
 
   const capacity = "1";
-  const title = "New Year's Special Early Bird Offer";
+  const title = "Early Bird Offer";
 
   const firstCampaignID = 1;
 
@@ -75,8 +75,9 @@ contract("EarlyBirds", function (accounts) {
   describe("Use cases", () => {
     it("should add a campaign with the provided title and capacity", async () => {
       await instance.addCampaign(title, capacity, { from: alice });
+      const _id = await instance.getCampaignID();
 
-      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      const result = await instance.getCampaignDetails.call(_id);
       campaignCode = result[1];
       assert.equal(
         result[0],
@@ -99,6 +100,8 @@ contract("EarlyBirds", function (accounts) {
         "the address adding the campaign should be listed as the host",
       );
     });
+
+  
 
     it("should emit a LogCampaignOpened event when a campaign is added", async () => {
       let eventEmitted = false;

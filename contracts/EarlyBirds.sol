@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import './Wormies.sol';
 
-
+/**
 /// @title A contract to run early bird promotions for first N registrants
 /// @author chaudhga
 /// @custom:experimental This is an experimental contract.
-contract EarlyBirds{
-  address public owner;
+ */
+contract EarlyBirds is Ownable{
   uint public campaignCount;
 
   uint8   public constant DECIMALS = 18;
@@ -25,30 +26,31 @@ contract EarlyBirds{
 
   mapping (address => bool) public registrantStatus;
 
-  struct Campaign{string title; bytes4 code; uint id; State state; uint capacity; 
-            address host;}
+  struct Campaign{
+    string title; 
+    bytes4 code; 
+    uint id; 
+    State state; 
+    uint capacity; 
+    address host;
+  }
 
   event LogCampaignOpened(string title, uint id, bytes4 campaignCode);
   event LogCampaignClosed(string title, uint id);
   event LogCampaignFull(string title, uint id);
   event LogRegistration(address _address, uint campaignID);
-  event LogCampaignDetails(string title, bytes4 code, State state, uint capacity, 
-                            address host, uint registrationCount);
-
 
   constructor(address _token) {
-    owner = msg.sender;
     campaignCount = 0;
     wormies = Wormies(_token);
   }
 
-  function codeToID(bytes4 _code) public view validCode(_code) returns(uint){
-    return(campaignCodes[_code]);
-  }
 
+/**
 /// @notice creates a new campaign; generates campaign id to be shared for registrations
 ///         assigns creator as the host which allows them to controol states
 /// @dev to fetch details of the campaign created call getCampaignDetails
+ */
   function addCampaign(string memory _title, uint _capacity) public returns(bool, uint){
     bytes4 _code = hash(_title, _capacity, msg.sender);
     campaignCount += 1;
@@ -65,8 +67,10 @@ contract EarlyBirds{
     return (true, campaignCount);
   }
 
+/** 
 /// @notice registration function (requires campaign code provided by host), only allows single registration
 /// @dev updates the state to full for last registrant
+ */
   function register(bytes4 _code) public 
     validCode(_code)
     notAlreadyRegistered()
@@ -83,23 +87,31 @@ contract EarlyBirds{
       emit LogRegistration(msg.sender, _id);
       return true;
     }
-
+/** 
 /// @notice Only host can close the campaign. Campaign can be closed at any stage, full or not.
 /// @dev before executing airdrop campaign registration must be closed
+ */
   function close(uint _id) public 
     validID(_id)
-    isHost(_id)
+    onlyHost(_id)
     isNotClosed(_id)
     returns(bool){
       campaigns[_id].state = State.Closed;
       emit LogCampaignClosed(campaigns[_id].title, _id);
       return(true);
     }
-
+  function closeByCode(bytes4 _code) public 
+  onlyHost(campaignCodes[_code])
+  returns(bool){
+    return(close(campaignCodes[_code]));
+  }
+/** 
 /// @notice Allocate tokens to registrants and burn any remaining tokens
+/// @dev onlyOwner can call this
+ */
   function airdrop(uint _id) public 
     validID(_id)
-    isOwner()
+    onlyOwner
     isClosedOrFull(_id)
     hasRegistrants(_id)
     returns(bool){
@@ -115,21 +127,42 @@ contract EarlyBirds{
     }
 
 
+  /** 
+  ///  Utility Functions
+   */
 
-  /// *** Utility Functions ***
-  function getCampaignDetails(uint _id) public
+  function getCampaignID() public view validID(campaignCount) returns(uint){
+    return campaignCount;
+  }
+  function codeToID(bytes4 _code) public view validCode(_code) returns(uint){
+    return(campaignCodes[_code]);
+  }
+
+  // Retrieves campaign details using id
+  function getCampaignDetails(uint _id) public view
     validID(_id)
     returns(string memory, bytes4 , State , uint , address , uint ){
       Campaign memory campaign = campaigns[_id];
       uint registrationCount = registrants[_id].length;
-      emit LogCampaignDetails(campaign.title, campaign.code, campaign.state, campaign.capacity, 
-                                campaign.host, registrationCount);
       return(campaign.title, campaign.code, campaign.state, campaign.capacity, campaign.host, registrationCount);
     }
-
+  
+  function getLastCampaignDetails() public view
+    validID(getCampaignID())
+    returns(string memory, bytes4 , State , uint , address , uint ){
+      return(getCampaignDetails(getCampaignID()));
+    }
+  
+  // Retrieves campaign details using code
+  function getCampaignDetailsByCode(bytes4 _code) public view
+    returns(string memory, bytes4 , State , uint , address , uint ){
+      return(getCampaignDetails(codeToID(_code)));
+    }
+  
+  // Allows host to reteive last code generated
   function getCompaignCodeById(uint _id) public view 
   validID(_id)
-  isHost(_id) 
+  onlyHost(_id) 
   returns(bytes4 _code){
     Campaign memory _campaign = campaigns[_id];
     return(_campaign.code);
@@ -170,7 +203,10 @@ contract EarlyBirds{
     emit LogCampaignFull(campaigns[_id].title, _id);
   }
 
-    function hash (
+  /**
+  /// Generates Unique Hash using keccak256 to be used as code to be shared using title & capacity
+   */
+  function hash (
         string memory _text,
         uint _num,
         address _addr
@@ -178,13 +214,10 @@ contract EarlyBirds{
         return bytes4(keccak256(abi.encodePacked(_text, _num, _addr)));
     }
 
-
-  /// *** Modifiers ***
-  modifier isOwner{
-    require(msg.sender == owner, "Only owner can perform this action.");
-    _;
-  }
-  modifier isHost(uint _campaignID){
+  /**
+  /// Modifiers 
+   */
+  modifier onlyHost(uint _campaignID){
     require(msg.sender == campaigns[_campaignID].host, "Only campaign host can perform this action.");
     _;
   }
@@ -217,7 +250,7 @@ contract EarlyBirds{
     _;
   }
   modifier validID(uint _id){
-    require(_id <= campaignCount, "Invalid campaign id");
+    require(_id <= campaignCount && _id > 0, "Invalid campaign id");
     _;
   }
   modifier hasRegistrants(uint _id){
