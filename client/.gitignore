@@ -11,6 +11,9 @@
 # production
 /build
 
+# screencast
+/screencast
+
 # misc
 .DS_Store
 .env.local

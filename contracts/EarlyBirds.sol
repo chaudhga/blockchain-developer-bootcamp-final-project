@@ -105,6 +105,11 @@ contract EarlyBirds is Ownable{
   returns(bool){
     return(close(campaignCodes[_code]));
   }
+  function closeLatestCampaign() public 
+  onlyHost(getCampaignID())
+  returns(bool){
+    return(close(getCampaignID()));
+  }
 /** 
 /// @notice Allocate tokens to registrants and burn any remaining tokens
 /// @dev onlyOwner can call this
@@ -125,7 +130,10 @@ contract EarlyBirds is Ownable{
       campaigns[_id].state = State.Airdropped;
       return(true);
     }
-
+  function airdropLatestCampaign() public
+  returns(bool){
+    return(airdrop(getCampaignID()));
+  }
 
   /** 
   ///  Utility Functions

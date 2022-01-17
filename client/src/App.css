@@ -17,6 +17,191 @@
   color: white;
 }
 
+.App-button {
+  background-color: #5dbeff; /* Green */
+  border: none;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.App-pcode {
+  outline-color:rgb(17, 82, 9);
+  padding: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  height: 20px;
+  width: 100px;
+  font-size: 16px;
+  margin: 4px 2px;
+  text-shadow: 1px 1px;
+  font-family: Copperplate;
+  background-color: white;
+  outline-style: dashed;
+  border-radius: 8px;
+  font-size: 30px;
+  text-shadow: 3px 3px 3px #ababab;
+}
+
+.App-codePrompt {
+  padding: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 4px;
+  margin: 4px 2px;
+  text-shadow: 1px 1px;
+  font-family: 'Titillium Web', sans-serif;
+  background-color: white;
+  border-radius: 8px;
+  font-size: 20px;
+  text-shadow: 3px 3px 3px #ababab;
+}
+
 .App-link {
   color: #09d3ac;
+}
+
+.border-gradient {
+  border: 10px solid;
+  border-image-slice: 1;
+  border-width: 5px;
+}
+.border-gradient-purple {
+  border-image-source: linear-gradient(to left, #743ad5, #d53a9d);
+}
+
+
+.btn-grad {background-image: linear-gradient(to right, #fc00ff 0%, #00dbde  51%, #fc00ff  100%)}
+.btn-grad {
+   margin: 20px;
+   padding: 15px 75px;
+   text-align: center;
+   text-transform: uppercase;
+   transition: 0.5s;
+   background-size: 200% auto;
+   color: white;            
+   box-shadow: 0 0 20px #eee;
+   display: block;
+   margin:0 auto;
+   display:block;
+   border-radius: 15px;
+ } 
+ .btn-grad:hover {
+   background-position: right center; /* change the direction of the change here */
+   color: #fff;
+   text-decoration: none;
+ }
+
+ input {
+	border: 1px solid #ccc;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	-moz-box-shadow: 2px 2px 3px #666;
+	-webkit-box-shadow: 2px 2px 3px #666;
+	box-shadow: 2px 2px 3px #666;
+	font-size: 20px;
+	padding: 4px 7px;
+	outline: 0;
+	-webkit-appearance: none;
+}
+input:focus {
+	border-color: #339933;
+}
+div.a {
+  line-height: normal;
+}
+
+
+
+
+ .btn-grad1 {background-image: linear-gradient(to right, #1FA2FF 0%, #12D8FA  51%, #1FA2FF  100%)}
+ .btn-grad1 {
+    margin: 50px;
+    padding: 15px 45px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    background-size: 200% auto;
+    color: white;            
+    box-shadow: 0 0 20px #eee;
+    border-radius: 10px;
+    display: block;
+    margin:0 auto;
+  }
+
+  .btn-grad1:hover {
+    background-position: right center; /* change the direction of the change here */
+    color: #fff;
+    text-decoration: none;
+  }
+
+
+  .btn-grad2 {background-image: linear-gradient(to right, #FF512F 0%, #F09819  51%, #FF512F  100%)}
+  .btn-grad2 {
+     margin: 50px;
+     padding: 15px 65px;
+     text-align: center;
+     text-transform: uppercase;
+     transition: 0.5s;
+     background-size: 200% auto;
+     color: white;            
+     box-shadow: 0 0 20px #eee;
+     border-radius: 10px;
+     display: block;
+     margin:0 auto;
+   }
+
+   .btn-grad2:hover {
+     background-position: right center; /* change the direction of the change here */
+     color: #fff;
+     text-decoration: none;
+   }
+
+   .App-h1  {
+     font-family: Montserrat;
+    font-size:60px;
+   }
+   .App-u1-purple  {
+     color: #743ad5;
+    font-family: Montserrat;
+   font-size:60px;
+  }
+  .fixed-content {
+    top: 0;
+    bottom:0;
+    position:fixed;
+    overflow-y:scroll;
+    overflow-x:hidden;
+  }
+  .fixed-header, .fixed-footer{
+    width: 100%;
+    position: fixed;        
+    background: #333;
+    padding: 10px 0;
+    color: #fff;
+}
+.fixed-header{
+    top: 0;
+}
+.container{
+  width: 80%;
+  margin: 0 auto; /* Center the DIV horizontally */
+}
+nav a{
+  color: #fff;
+  text-decoration: none;
+  padding: 7px 25px;
+  display: inline-block;
+}
+body{
+  background-image: linear-gradient(to bottom right, #ffffff, #ffffff);
 }

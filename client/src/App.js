@@ -26,7 +26,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ code:0, registered:"", web3, accounts, contract: instance });//, this.runExample);
+      this.setState({ code:0, registered:"", airdrop:"", closed:"", web3, accounts, contract: instance });//, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -37,7 +37,7 @@ class App extends Component {
   };
 
 
-  runExample = async () => {
+  runCreate = async () => {
     const { accounts, contract } = this.state;
     const title = document.getElementById("title").value;
     const cap = document.getElementById("capacity").value;
@@ -51,6 +51,18 @@ class App extends Component {
     this.setState({ code: response[1]});
   };
 
+  runClose = async () => {
+    const { accounts, contract } = this.state;
+
+    // Stores a given value, 5 by default.
+    await contract.methods.closeLatestCampaign().send({ from: accounts[0]});
+    // Get the value from the contract to prove it worked.
+    const response = await contract.methods.getLastCampaignDetails().call();
+
+    // Update state with the result.
+    this.setState({ closed: response[2]});
+  };
+
   runRegister = async () => {
     const { accounts, contract } = this.state;
     const campaignCode = document.getElementById("Code").value;
@@ -58,9 +70,22 @@ class App extends Component {
 
     // Stores a given value, 5 by default.
     const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
+    // TODO: Display results
+
     const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
     // Update state with the result.
     this.setState({ registered: successMsg});
+  };
+
+  runAirdrop = async () => {
+    const { accounts, contract } = this.state;
+
+    // Stores a given value, 5 by default.
+    await contract.methods.airdropLatestCampaign().send({ from: accounts[0]});
+    const airdropSuccessMsg = "SUCCESS! Happy birdies are singing your praises";
+
+    // Update state with the result.
+    this.setState({ airdrop: airdropSuccessMsg});
   };
   
   render() {
@@ -69,41 +94,65 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>Early Bird gets the<i><u> WORMies!</u></i></h1>
+        <div >
+          <div class="container"><img src = "bird-house.svg" height="100" alt="Bird SVG"/></div>        
+        </div>
+        <h1 class="App-h1">Early Bird gets the <u class="App-u1-purple"><i>WORMies!</i></u></h1>
         <img src="bird-worm.jpg" alt="Early Bird Gets the Worm"/>
         <h2>
             Let's feed some hungry birds!
         </h2>
         <br/>
         <div>
-          <lable for="title">Campaign Title </lable>
+          <lable class="App-codePrompt" for="title">Campaign Title: </lable>
           <input type="text" id="title" name="title"></input>
-          <br/>
-          <label for="capacity">Campaign Size </label>
+          <label class="App-codePrompt" for="capacity">Campaign Size: </label>
           <input type="text" id="capacity" name="capacity"></input>
           <br/>
-          <button type="submit" onClick={()=>this.runExample()}>Create</button>
         </div>
+        <div>
+          <br/>
+          <button class="btn-grad1" type="submit" onClick={()=>this.runCreate()}>Create Campaign</button>
+        </div>
+        <div class="App-codePrompt">Registration Code: <p class="border-gradient border-gradient-purple">{this.state.code}</p> </div>
         <br/>
-        <div>Registration Code {this.state.code}</div>
+        <hr class="rounded"/>
+        <h2>Stop the clock and start the fun!</h2>
+        <button class="btn-grad1" type="submit" onClick={()=>this.runClose()}>Close Campaign</button>
         <br/>
-
+        <div>Transaction Status: {this.state.closed}</div>
 
         <hr class="rounded"/>
         <h2>
-            WELCOME BIRDIE! Got the Code?
+            WELCOME BIRDIE! 
         </h2>
-        <h3>Hurry up! before all the WORMies are scooped up!</h3>
+        <h2>Got the Code?</h2>
         <br/>
         <div>
-          <label for="Code">Registration Code </label>
+          <label class="App-codePrompt" for="Code">Registration Code </label>
           <input type="text" id="Code" name="Code"></input>
           <br/>
           <br/>
-          <button type="submit" onClick={()=>this.runRegister()}>Register</button>
+          <button class="btn-grad2" type="submit" onClick={()=>this.runRegister()}>Register</button>
         </div>
         <br/>
-        <div>Status: {this.state.registered}</div>
+        <div>Transaction Status: {this.state.registered}</div>
+
+        <hr class="rounded"/>
+        <h2>
+            YAY! TO THE MOON
+        </h2>
+        <h2>off we go...</h2>
+        <br/>
+        <div>
+          <button class="btn-grad" type="submit" onClick={()=>this.runAirdrop()}>Airdrop</button>
+        </div>
+        <br/>
+        <div>Transaction Status: {this.state.airdrop}</div>
+        <hr class="rounded"/>      
+        <div class="fixed-footer">
+          <div class="container">Copyright &copy; 2022 Gauravc.eth</div>        
+        </div>
       </div>
     );
   }
