@@ -59,47 +59,45 @@ class App extends Component {
     // Stores a given value, 5 by default.
     const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
     const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
-    const failedMsg =  "OOPS! Early birds have scooped up all the wormies. Stay tuned for more events...";
-    let registrationMessage;
-    if (tx.logs[0].event == "LogRegistration") {
-      registrationMessage = successMsg;
-    }else{const registrationMessage = failedMsg}
-
     // Update state with the result.
-    this.setState({ registered: registrationMessage});
+    this.setState({ registered: successMsg});
   };
+  
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
-        <img src="bird-worm.jpg" alt="Early Bird Gets the Worm"/>
         <h1>Early Bird gets the<i><u> WORMies!</u></i></h1>
-        <p>
+        <img src="bird-worm.jpg" alt="Early Bird Gets the Worm"/>
+        <h2>
             Let's feed some hungry birds!
-        </p>
+        </h2>
         <br/>
         <div>
-          <text>Title: </text>
-          <input type="text" id="title"></input>
+          <lable for="title">Campaign Title </lable>
+          <input type="text" id="title" name="title"></input>
           <br/>
-          <text>Capacity: </text>
-          <input type="text" id="capacity"></input>
+          <label for="capacity">Campaign Size </label>
+          <input type="text" id="capacity" name="capacity"></input>
           <br/>
           <button type="submit" onClick={()=>this.runExample()}>Create</button>
         </div>
         <br/>
-        <div>Code for sharing: {this.state.code}</div>
+        <div>Registration Code {this.state.code}</div>
         <br/>
-        <div>(Share the code out, bring in the birdies)</div>
-        <p>
-            Great! You got the Code?  Hurry and register before all free WORMies are gone!
-        </p>
+
+
+        <hr class="rounded"/>
+        <h2>
+            WELCOME BIRDIE! Got the Code?
+        </h2>
+        <h3>Hurry up! before all the WORMies are scooped up!</h3>
         <br/>
         <div>
-          <text>Entere the Code shared by the host: </text>
-          <input type="text" id="Code"></input>
+          <label for="Code">Registration Code </label>
+          <input type="text" id="Code" name="Code"></input>
           <br/>
           <br/>
           <button type="submit" onClick={()=>this.runRegister()}>Register</button>
