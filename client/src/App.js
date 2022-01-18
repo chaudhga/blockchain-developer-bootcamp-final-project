@@ -30,7 +30,7 @@ class App extends Component {
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Make sure Web3 provider like metamask is installed and rety!`,
+        `Failed to load web3. Make sure Web3 provider like metamask is configured and retry!`,
       );
       console.error(error);
     }
