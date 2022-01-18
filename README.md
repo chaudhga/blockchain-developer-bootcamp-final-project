@@ -74,9 +74,10 @@ Network Ropsten (EarlyBirds):
 
 
 ---
-#### Vercel DApp Demo Link:
-https://blockchain-developer-bootcamp-final-project-ogt1ii50e-chaudhga.vercel.app/ 
-##### TODO: Fix vercel environment variable setup issue
+#### Vercel DApp Demo Link: (NOW WORKING!!)
+https://early-birds.vercel.app/ 
+
+
 ---
 ### Future enhancements to be done:
 1. Ability to host multiple events simultaneously and functionality for hosts to operate airdrops automatically through smart contract. 
