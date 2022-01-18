@@ -68,8 +68,6 @@ class App extends Component {
     const campaignCode = document.getElementById("Code").value;
     console.log(campaignCode);
 
-    // Stores a given value, 5 by default.
-    const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
     // TODO: Display results
 
     const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
