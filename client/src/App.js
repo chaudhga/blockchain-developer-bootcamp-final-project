@@ -64,7 +64,6 @@ class App extends Component {
   };
 
   runRegister = async () => {
-    const { accounts, contract } = this.state;
     const campaignCode = document.getElementById("Code").value;
     console.log(campaignCode);
 
