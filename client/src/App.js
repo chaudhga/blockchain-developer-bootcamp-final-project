@@ -26,7 +26,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ code:0, registered:"", airdrop:"", closed:"", web3, accounts, contract: instance });//, this.runExample);
+      this.setState({ code:0, created:"", registered:"", airdrop:"", closed:"", web3, accounts, contract: instance });//, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -38,6 +38,7 @@ class App extends Component {
 
 
   runCreate = async () => {
+  try{
     const { accounts, contract } = this.state;
     const title = document.getElementById("title").value;
     const cap = document.getElementById("capacity").value;
@@ -46,43 +47,70 @@ class App extends Component {
     await contract.methods.addCampaign(title, cap).send({ from: accounts[0]});
     // Get the value from the contract to prove it worked.
     const response = await contract.methods.getLastCampaignDetails().call();
-
+    // await response.wait();
     // Update state with the result.
-    this.setState({ code: response[1]});
+    this.setState({ code: response[1], created:"Success!"});
+  } catch(error){
+    const errorMsg = "ERROR!";
+    this.setState({code: errorMsg, created:"ERROR: Failed to create campaign!"});
+    }
   };
 
   runClose = async () => {
-    const { accounts, contract } = this.state;
+    try{
+      const { accounts, contract } = this.state;
 
-    // Stores a given value, 5 by default.
-    await contract.methods.closeLatestCampaign().send({ from: accounts[0]});
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.getLastCampaignDetails().call();
-
-    // Update state with the result.
-    this.setState({ closed: response[2]});
+      // Stores a given value, 5 by default.
+      await contract.methods.closeLatestCampaign().send({ from: accounts[0]});
+      // Get the value from the contract to prove it worked.
+      const response = await contract.methods.getLastCampaignDetails().call();
+      // Update state with the result.
+      this.setState({ closed: response[2]});
+    }catch(error){
+      const errorMsg = "Failed to close campaign!";
+      this.setState({closed: errorMsg});
+    }
   };
 
   runRegister = async () => {
-    const campaignCode = document.getElementById("Code").value;
-    console.log(campaignCode);
-
-    // TODO: Display results
-
-    const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
-    // Update state with the result.
-    this.setState({ registered: successMsg});
+    try{
+      const { accounts, contract } = this.state;
+      const campaignCode = document.getElementById("Code").value;
+      console.log(campaignCode);
+      const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
+      const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
+      // Update state with the result.
+      this.setState({ registered: successMsg});
+    }catch(error){
+      const errorMsg = "ERROR: Failed to register!";
+      this.setState({registered: errorMsg});
+    }
   };
 
   runAirdrop = async () => {
-    const { accounts, contract } = this.state;
+    try{
+      const { accounts, contract } = this.state;
+      console.log("inside runAirdrop");
+      // TODO: Find a way to connect using owner address instead of current user (for demo purpose.)
+      // const HDWalletProvider = require("@truffle/hdwallet-provider");
+      // const ethers = require('ethers');
+      // const mnemonicPhrase=process.env.MNEMONIC;
+      // let mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonicPhrase);
+      // console.log(mnemonicWallet.privateKey);
+      // * check current owner:
+      // var owner = await contract.owner.call();
+      // console.log("owner address:"+owner)
 
-    // Stores a given value, 5 by default.
-    await contract.methods.airdropLatestCampaign().send({ from: accounts[0]});
-    const airdropSuccessMsg = "SUCCESS! Happy birdies are singing your praises";
+      // Stores a given value, 5 by default.
+      const tx = await contract.methods.airdropLatestCampaign().send({ from: accounts[0]});
+      const airdropSuccessMsg = "SUCCESS! Happy birdies are singing your praises";
 
-    // Update state with the result.
-    this.setState({ airdrop: airdropSuccessMsg});
+      // Update state with the result.
+      this.setState({ airdrop: airdropSuccessMsg});
+    }catch(error){
+      const errorMsg = "ERROR: Failed to Airdrop! confirm you are the owner of the contract";
+      this.setState({airdrop: errorMsg});
+    }
   };
   
   render() {
@@ -111,8 +139,9 @@ class App extends Component {
           <br/>
           <button class="btn-grad1" type="submit" onClick={()=>this.runCreate()}>Create Campaign</button>
         </div>
-        <div class="App-codePrompt">Registration Code: <p class="border-gradient border-gradient-purple">{this.state.code}</p> </div>
+        <div class="App-codePrompt">Registration Code: <p class="border-gradient border-gradient-purple">{this.state.code==0?'********':this.state.code}</p> </div>
         <br/>
+        <div>Transaction Status: {this.state.created}</div>
         <hr class="rounded"/>
         <h2>Stop the clock and start the fun!</h2>
         <button class="btn-grad1" type="submit" onClick={()=>this.runClose()}>Close Campaign</button>
