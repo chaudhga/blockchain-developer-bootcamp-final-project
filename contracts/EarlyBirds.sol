@@ -12,17 +12,24 @@ import './Wormies.sol';
 contract EarlyBirds is Ownable{
   uint public campaignCount;
 
-  uint8   public constant DECIMALS = 18;
-  uint256 public constant DECIMALFACTOR = 10 ** uint256(DECIMALS);
-  uint256 constant TOKENS_PER_REGISTRANT = 100 * uint256(DECIMALFACTOR);
-  uint256 public AIRDROP_SUPPLY = 10000000 * uint256(DECIMALFACTOR);
-  uint256 public TOTAL_SUPPLY = 1000000000000 * uint256(DECIMALFACTOR);  
+  uint8   private constant DECIMALS = 18;
+  uint256 private constant DECIMALFACTOR = 10 ** uint256(DECIMALS);
+  uint256 private TOKENS_PER_REGISTRANT = 100 * uint256(DECIMALFACTOR);
+  uint256 private AIRDROP_SUPPLY = 10000000 * uint256(DECIMALFACTOR);
+  uint256 private TOTAL_SUPPLY = 1000000000000 * uint256(DECIMALFACTOR);  
+
+  // Reset DEMO to false when moving to production (and specify admin address explicitely through setAdmin)
+  // DEMO=true: Makes latest campaign host admin 
+  bool private DEMO = true;
+
   Wormies public wormies;
 
   mapping (uint => Campaign) public campaigns;
   mapping (bytes4 => uint) public campaignCodes;
   mapping (uint => address[]) private registrants;
   enum State{Open, Full, Closed, Airdropped}
+
+  address private _admin;
 
   mapping (address => bool) public registrantStatus;
 
@@ -38,18 +45,18 @@ contract EarlyBirds is Ownable{
   event LogCampaignOpened(string title, uint id, bytes4 campaignCode);
   event LogCampaignClosed(string title, uint id);
   event LogCampaignFull(string title, uint id);
-  event LogRegistration(address _address, uint campaignID);
+  event LogRegistration(address _address, string title, uint campaignID, uint totalRegistered, uint maxCapacity);
 
   constructor(address _token) {
     campaignCount = 0;
     wormies = Wormies(_token);
   }
 
-
 /**
 /// @notice creates a new campaign; generates campaign id to be shared for registrations
 ///         assigns creator as the host which allows them to controol states
 /// @dev to fetch details of the campaign created call getCampaignDetails
+/// TODO: Ability to handle miltiple concurrent campaign creations
  */
   function addCampaign(string memory _title, uint _capacity) public returns(bool, uint){
     bytes4 _code = hash(_title, _capacity, msg.sender);
@@ -63,13 +70,19 @@ contract EarlyBirds is Ownable{
       host: msg.sender
     });
     campaignCodes[_code] = campaignCount;
+
+    if(DEMO){
+      // Make current campaign creator admin to be able to carry out airdrops
+      _admin = msg.sender;
+    }
+
     emit LogCampaignOpened(_title, campaignCount, _code);
     return (true, campaignCount);
   }
 
 /** 
 /// @notice registration function (requires campaign code provided by host), only allows single registration
-/// @dev updates the state to full for last registrant
+/// @dev updates the state to full for last registrant, should call resetRegistrations() first to allow re-registrations 
  */
   function register(bytes4 _code) public 
     validCode(_code)
@@ -80,11 +93,11 @@ contract EarlyBirds is Ownable{
       uint _id = codeToID(_code);
       uint _capacity = campaigns[_id].capacity;
       if(registrants[_id].length < _capacity){
-              registrants[_id].push(msg.sender);
+          registrants[_id].push(msg.sender);
       }
       checkAndMarkFull(_id);
       registrantStatus[msg.sender]=true;
-      emit LogRegistration(msg.sender, _id);
+      emit LogRegistration(msg.sender, campaigns[_id].title, _id, registrants[_id].length, campaigns[_id].capacity);
       return true;
     }
 /** 
@@ -111,34 +124,74 @@ contract EarlyBirds is Ownable{
     return(close(getCampaignID()));
   }
 /** 
-/// @notice Allocate tokens to registrants and burn any remaining tokens
-/// @dev onlyOwner can call this
+/// @notice Allocate tokens to registrants 
+/// @dev only hosts can call this
  */
   function airdrop(uint _id) public 
     validID(_id)
-    onlyOwner
+    onlyAdmin
     isClosedOrFull(_id)
     hasRegistrants(_id)
     returns(bool){
-      uint totalRegistrants = registrants[_id].length;
- 
-      for(uint i=0; i<totalRegistrants; i++){
+    uint totalRegistrants = registrants[_id].length;
+    campaigns[_id].state = State.Airdropped;
+    require(wormies.balanceOf(address(this))>=TOKENS_PER_REGISTRANT);
+    for(uint i=0; i<totalRegistrants; i++){
         address registrant = registrants[_id][i];
-        // wormies.transferFrom(msg.sender, registrant, TOKENS_PER_REGISTRANT);
-        wormies.mint(registrant, TOKENS_PER_REGISTRANT);
+        wormies.transfer(registrant, TOKENS_PER_REGISTRANT);
       }
-      campaigns[_id].state = State.Airdropped;
       return(true);
     }
+  // currently only allows airdrop for latest campaign
   function airdropLatestCampaign() public
   returns(bool){
     return(airdrop(getCampaignID()));
   }
 
+  /**
+  /// Generates Unique Hash using keccak256 to be used as code to be shared using title & capacity
+   */
+  function hash (
+        string memory _text,
+        uint _num,
+        address _addr
+    ) internal view returns (bytes4) {
+        return bytes4(keccak256(abi.encodePacked(_text, _num, _addr, block.timestamp)));
+    }
+
+
+  /**
+  /// Set Functions to configure Airdrop related parameters by Owner/Admin
+   */
+  function setDemo(bool _isDemo) public onlyOwner{
+    DEMO = _isDemo;
+  }
+
+  function setAdmin(address _adminAddr) public onlyOwner{
+    // TODO: Functionality to add new addresses as admin to perform airdrops etc.
+    _admin = _adminAddr;
+  }
+
+  function setTokensPerRegistrant(uint _tprAmount) public onlyAdmin{
+    TOKENS_PER_REGISTRANT = _tprAmount;
+  }
+
+  function setAirdropSupply(uint _airdropSupply) public onlyAdmin{
+    AIRDROP_SUPPLY = _airdropSupply;
+  }
+
+  function setTotalSupply(uint _totalSupply) public onlyAdmin{
+    TOTAL_SUPPLY = _totalSupply;
+  }
+
+  function resetRegistrations() public onlyAdmin{ 
+    // TODO: Clear status of registrants, 
+    //       allow re-regestrations for previously registered
+  }
+
   /** 
   ///  Utility Functions
    */
-
   function getCampaignID() public view validID(campaignCount) returns(uint){
     return campaignCount;
   }
@@ -176,34 +229,6 @@ contract EarlyBirds is Ownable{
     return(_campaign.code);
   }
 
-  function getCompaignStateById(uint _id) public view 
-  validID(_id)
-  returns(State){
-    Campaign memory _campaign = campaigns[_id];
-    return(_campaign.state);
-  }
-
-  function getRemainingCapacityById(uint _id) public view 
-  validID(_id)
-  returns(uint){
-    Campaign memory _campaign = campaigns[_id];
-    uint currRegistrantCount = registrants[_id].length;
-    return(_campaign.capacity - currRegistrantCount);
-  }
-
-  function getRegistrantCount(uint _id) public view
-  validID(_id)
-  returns(uint){
-    return(registrants[_id].length);
-  }
-
-  function getCapacityById(uint _id) public view 
-  validID(_id)
-  returns(uint){
-    Campaign memory _campaign = campaigns[_id];
-    return(_campaign.capacity);
-  }
-
   function checkAndMarkFull(uint _id) internal validID(_id){
     if(registrants[_id].length == campaigns[_id].capacity){
         campaigns[_id].state = State.Full;
@@ -212,23 +237,18 @@ contract EarlyBirds is Ownable{
   }
 
   /**
-  /// Generates Unique Hash using keccak256 to be used as code to be shared using title & capacity
-   */
-  function hash (
-        string memory _text,
-        uint _num,
-        address _addr
-    ) internal pure returns (bytes4) {
-        return bytes4(keccak256(abi.encodePacked(_text, _num, _addr)));
-    }
-
-  /**
   /// Modifiers 
    */
   modifier onlyHost(uint _campaignID){
     require(msg.sender == campaigns[_campaignID].host, "Only campaign host can perform this action.");
     _;
   }
+
+  modifier onlyAdmin(){
+    require(msg.sender == _admin || msg.sender == this.owner());
+    _;
+  }
+
   modifier notAlreadyRegistered(){
     require(!registrantStatus[msg.sender], "You have already registered to a campaign.");
     _;

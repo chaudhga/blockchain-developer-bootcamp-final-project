@@ -13,14 +13,12 @@ contract("EarlyBirds", function (accounts) {
   const title = "Early Bird Offer";
 
   const firstCampaignID = 1;
-
-  let campaignCode;
-
   let instance;
 
   beforeEach(async () => {
     wormies = await Wormies.new();
     instance = await EarlyBirds.new(wormies.address);
+    await wormies.transfer(instance.address, web3.utils.toWei('10000'));
   });
 
   describe("Variables", () => {
@@ -101,8 +99,6 @@ contract("EarlyBirds", function (accounts) {
       );
     });
 
-  
-
     it("should emit a LogCampaignOpened event when a campaign is added", async () => {
       let eventEmitted = false;
       const tx = await instance.addCampaign(title, capacity, { from: alice });
@@ -121,13 +117,34 @@ contract("EarlyBirds", function (accounts) {
     });
 
     it("should allow someone to register for a campaign and update state accordingly", async () => {
-      await instance.addCampaign(title, capacity, { from: alice });
-      await instance.register(campaignCode, { from: bob});
-
+      await instance.addCampaign("Test Register", 1, { from: alice });
       const result = await instance.getCampaignDetails.call(firstCampaignID);
+      const tx = await instance.register(result[1], { from: bob});
+  
+      let eventRegistration = false;
+      let eventFull = false;
 
+      if (tx.logs[1].event == "LogRegistration") {
+        eventRegistration = true;
+      }
       assert.equal(
-        result[2].toString(10),
+        eventRegistration,
+        true,
+        'Event LogRegistration should be emitted after registration'
+      )
+
+      if (tx.logs[0].event == "LogCampaignFull") {
+        eventFull = true;
+      }
+      assert.equal(
+        eventFull,
+        true,
+        'Event LogCampaignFull should be emitted after campaign is full'
+      )
+
+      const resultAfterRegistration = await instance.getCampaignDetails.call(firstCampaignID);
+      assert.equal(
+        resultAfterRegistration[2].toString(10),
         EarlyBirds.State.Full,
         'the state of the campaign should be "Full"',
       );
@@ -142,8 +159,9 @@ contract("EarlyBirds", function (accounts) {
 
     it("should not allow someone to register once campaign is full", async () => {
       await instance.addCampaign(title, 1, { from: alice });
-      await instance.register(campaignCode, { from: bob});
-      await catchRevert(instance.register(campaignCode, { from: carl}));
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
+      await catchRevert(instance.register(result[1], { from: carl}));
     });
 
     it("should allow host to close campaign", async () => {
@@ -166,25 +184,63 @@ contract("EarlyBirds", function (accounts) {
       await instance.addCampaign(title, capacity, { from: alice });
 
       bobBalanceBefore = await wormies.balanceOf.call(bob);
-      await instance.register(campaignCode, { from: bob});
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
 
       await instance.airdrop(firstCampaignID, { from: _owner });
-
       var bobBalanceAfter = await wormies.balanceOf.call(bob);
 
       chai_assert(bobBalanceBefore<bobBalanceAfter, "Balance should increase");
     });
 
+
     it("should not allow airdrop from someone other than owner", async () => {
       await instance.addCampaign(title, capacity, { from: alice });
       bobBalanceBefore = await wormies.balanceOf.call(bob);
-      await instance.register(campaignCode, { from: bob});
-      let txt = web3.utils.hexToAscii(campaignCode);
-      let hex = web3.utils.asciiToHex(txt);
-      let num = web3.utils.hexToNumber(campaignCode);
-      let ntox = web3.utils.hexToNumber(num);
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
 
       await catchRevert(instance.airdrop(firstCampaignID, { from: bob }), "Only owner should be able to airdrop");
     })
+
+
+    it("should allow host to airdrop (if DEMO)", async () => {
+      await instance.addCampaign(title, capacity, { from: alice });
+
+      bobBalanceBefore = await wormies.balanceOf.call(bob);
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
+
+      await instance.airdrop(firstCampaignID, { from: alice });
+      var bobBalanceAfter = await wormies.balanceOf.call(bob);
+
+      chai_assert(bobBalanceBefore<bobBalanceAfter, "Balance should increase");
+    });
+
+    it("should not allow host to airdrop if not DEMO", async () => {
+      await instance.setDemo(false,{from:_owner});
+      await instance.addCampaign(title, capacity, { from: alice });
+
+      bobBalanceBefore = await wormies.balanceOf.call(bob);
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
+
+      await catchRevert(instance.airdrop(firstCampaignID, { from: alice }), "Only owner should be able to airdrop");
+    });
+
+    it("should allow owner to set any address to be set as admin (allowing airdrop)", async () => {
+      await instance.addCampaign(title, capacity, { from: alice });
+
+      bobBalanceBefore = await wormies.balanceOf.call(bob);
+      const result = await instance.getCampaignDetails.call(firstCampaignID);
+      await instance.register(result[1], { from: bob});
+
+      await instance.setDemo(false,{from:_owner});
+      await instance.setAdmin(carl, { from: _owner });
+      await instance.airdrop(firstCampaignID, { from: carl });
+      var bobBalanceAfter = await wormies.balanceOf.call(bob);
+
+      chai_assert(bobBalanceBefore<bobBalanceAfter, "Balance should increase");
+    });
   });
 });

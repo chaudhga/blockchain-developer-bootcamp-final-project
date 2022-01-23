@@ -46,9 +46,11 @@ The Early Birds dapp allows campaign organizers (Hosts for Events, Exhibitions, 
 ### Local Deployment Flow: 
 
 * Run ```npm install``` to download and install project dependencies.
-* ```ganache-cli``` or ```Ganache GUI``` should be running first before deploying
+* ```Ganache GUI``` should be running first before deploying OR 
+*  for using ```Ganache CLI``` change the port value in ```truffle-config.js``` under networks -> develop -> port: to ```8545```
 * ```truffle compile```
-* ```truffle migrate --reset --network development``` | Development network will accept any network id.
+* ```truffle migrate --reset --network development``` | Development network will accept any network id. (Note the ```Wormies``` contract address to import WRM tokens in Metamask.)
+* Run ```npm install --save-dev chai``` to install chai for running tests.
 * Run ```truffle test``` to run smart contracts tests.
 ---
 ### Mainnet and Testnet Deployment Flow: 
@@ -56,17 +58,19 @@ The Early Birds dapp allows campaign organizers (Hosts for Events, Exhibitions, 
 * ```.sample.env``` file should first be populated with the mnemonic of the wallet in which the contract will be deployed from, and the infura project id and renamed to ```.env```
 * Install dotenv using command ```npm i dotenv``` this will automcatically load variables from ```.env``` file to ```process.env``` object and be read in scripts
 * In ```truffle-config.js``` file, un-comment the network in which you'll be deploying to, in our case the network is `ropsten`, and fill the needed details like the ***provider*** and ***infura*** network link
+* ```truffle migrate --reset --network ropsten``` to deploy to ropsten. (Note the ```Wormies``` contract address.)
+* Add the ```Wormies``` contract address in Metamask under ```import tokens``` to view the WRM token status
 * Also, when deploying to another network other than `ropsten`, update `package.json` script `"truffle-prod"` and change the network name to your network.
 
 
 ### Deployed Contract Addresses (ropsten):
 Network: ropsten (Wormies - ERC20)
 ```
-0xe8ECc09B13950cA05623aFE953076279e1c49968
+0x9b456B99f0f2b9a16A33d4db4E44E2d67b2bfBD9
 ```
 Network Ropsten (EarlyBirds):
 ```
- 0x01A8dF398b26Afd652CC2EF1524F525f14bC6641
+0x72a5F5693fEE7246E48ecA24E4d148c96543aC41
 ```
 ### Screencast Demo: 
 

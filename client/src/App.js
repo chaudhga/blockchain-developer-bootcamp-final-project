@@ -77,7 +77,7 @@ class App extends Component {
       const { accounts, contract } = this.state;
       const campaignCode = document.getElementById("Code").value;
       console.log(campaignCode);
-      const tx = await contract.methods.register(campaignCode).send({ from: accounts[0]});
+      await contract.methods.register(campaignCode).send({ from: accounts[0]});
       const successMsg =  "SUCCESS! We are catching some fresh wormies for you!";
       // Update state with the result.
       this.setState({ registered: successMsg});
@@ -87,22 +87,26 @@ class App extends Component {
     }
   };
 
+  runAirdropByMnemonic = async () => {
+    const { contract } = this.state;
+      // TODO: Find a way to connect using owner address instead of current user (for demo purpose.)
+      const HDWalletProvider = require("@truffle/hdwallet-provider");
+      const ethers = require('ethers');
+      const mnemonicPhrase=process.env.MNEMONIC;
+      let mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonicPhrase);
+      console.log(mnemonicWallet.privateKey);
+      var owner = await contract.owner.call();
+      console.log("owner address:"+owner);
+  }
+
   runAirdrop = async () => {
     try{
       const { accounts, contract } = this.state;
       console.log("inside runAirdrop");
-      // TODO: Find a way to connect using owner address instead of current user (for demo purpose.)
-      // const HDWalletProvider = require("@truffle/hdwallet-provider");
-      // const ethers = require('ethers');
-      // const mnemonicPhrase=process.env.MNEMONIC;
-      // let mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonicPhrase);
-      // console.log(mnemonicWallet.privateKey);
-      // * check current owner:
-      // var owner = await contract.owner.call();
-      // console.log("owner address:"+owner)
+
 
       // Stores a given value, 5 by default.
-      const tx = await contract.methods.airdropLatestCampaign().send({ from: accounts[0]});
+      await contract.methods.airdropLatestCampaign().send({ from: accounts[0]});
       const airdropSuccessMsg = "SUCCESS! Happy birdies are singing your praises";
 
       // Update state with the result.
@@ -139,7 +143,7 @@ class App extends Component {
           <br/>
           <button class="btn-grad1" type="submit" onClick={()=>this.runCreate()}>Create Campaign</button>
         </div>
-        <div class="App-codePrompt">Registration Code: <p class="border-gradient border-gradient-purple">{this.state.code==0?'********':this.state.code}</p> </div>
+        <div class="App-codePrompt">Registration Code: <p class="border-gradient border-gradient-purple gradient-bkg">{this.state.code===0?'********':this.state.code}</p> </div>
         <br/>
         <div>Transaction Status: {this.state.created}</div>
         <hr class="rounded"/>
@@ -153,6 +157,7 @@ class App extends Component {
             WELCOME BIRDIE! 
         </h2>
         <h2>Got the Code?</h2>
+        <h4><i>Note: Please remember to refresh browser after metamask account change.</i></h4>
         <br/>
         <div>
           <label class="App-codePrompt" for="Code">Registration Code </label>
@@ -163,12 +168,11 @@ class App extends Component {
         </div>
         <br/>
         <div>Transaction Status: {this.state.registered}</div>
-
         <hr class="rounded"/>
         <h2>
-            YAY! TO THE MOON
+            Admin Function
         </h2>
-        <h2>off we go...</h2>
+        <h4><i>Only Admin Accounts:[Owner/Host(if Demo)/Assigned Admin] can execute</i></h4>
         <br/>
         <div>
           <button class="btn-grad" type="submit" onClick={()=>this.runAirdrop()}>Airdrop</button>
