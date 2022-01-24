@@ -87,18 +87,6 @@ class App extends Component {
     }
   };
 
-  runAirdropByMnemonic = async () => {
-    const { contract } = this.state;
-      // TODO: Find a way to connect using owner address instead of current user (for demo purpose.)
-      const HDWalletProvider = require("@truffle/hdwallet-provider");
-      const ethers = require('ethers');
-      const mnemonicPhrase=process.env.MNEMONIC;
-      let mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonicPhrase);
-      console.log(mnemonicWallet.privateKey);
-      var owner = await contract.owner.call();
-      console.log("owner address:"+owner);
-  }
-
   runAirdrop = async () => {
     try{
       const { accounts, contract } = this.state;
