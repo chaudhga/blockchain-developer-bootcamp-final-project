@@ -11,11 +11,11 @@ The Early Birds dapp allows campaign organizers (Hosts for Events, Exhibitions, 
 ### User Interaction Flow: 
 
 1. Campaign Host initiates a transaction with the specified requirements of the campaign: Event Titile, Event Capacity (Number of early bird offer addresses for distribute the tokens) 
-2. Contract then generates the unique secret code for the campaign based on (title, capacity, host) and provides it to the host for promotional purposes.
-3. Participants use the secret code to register for the event and are accepted or rejected based on the capacity and status of the campaign.
-4. Host can close the campaign irrespective of whether the total capacity has been reached (e.g. on a certain date)
+2. Contract then generates the unique campaign code for the campaign based on (title, capacity, host, current time) and provides it to the host for promotional purposes.
+3. Participants use the campaign code to register for the event and are accepted or rejected based on the current status of the campaign.
+4. Host can close the campaign irrespective of whether the total capacity has been reached (e.g. on campaign deadline)
 5. Host contacts the platform provider/contract owner to issue the airdrop.
-6. Each participant is airdropped predecided number of WRM tokens.
+6. Each participant is airdropped predefined number of WRM tokens by contract owner (or campaign host in Demo mode)
 ---
   ## Public Address for Certification NFT:
 ```
@@ -78,7 +78,7 @@ Network Ropsten (EarlyBirds):
 
 
 ---
-#### Vercel DApp Demo Link: (NOW WORKING!!)
+#### Vercel DApp Demo Link:
 https://early-birds.vercel.app/ 
 
 
