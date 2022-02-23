@@ -19,8 +19,11 @@ The Early Birds dapp allows campaign organizers (Hosts for Events, Exhibitions, 
 ---
   ## Public Address for Certification NFT:
 ```
-  0x136e8dd3a06b322380DFece9a518c17da1F92523
- ```
+gauravc.eth
+```
+```
+0x136e8dd3a06b322380DFece9a518c17da1F92523
+```
 
 --- 
 ### Prerequisites: 
